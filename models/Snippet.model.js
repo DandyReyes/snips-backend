@@ -1,6 +1,7 @@
 const fs = require('fs').promises;
 // Module to create paths
 const path = require('path');
+const shortid = require('shortid');
 /**
  * @typedef {Object} Snippet
  * @property {string} id
@@ -14,6 +15,42 @@ const path = require('path');
  */
 
 /* Create */
+/**
+ * Inserts a new snippet into the db.
+ * @param {Snippet} newSnippet - the data to create the snippet with
+ * @returns {Promise<Snippet>} the create snippet
+ */
+exports.insert = async ({ author, code, title, description, language }) => {
+  try {
+    if (!author || !code || !title || !description || !language) {
+      throw Error('missing properties');
+    }
+    // Read snippets.json
+    const dbpath = path.join(__dirname, '..', 'db', 'snippets.json');
+    const snippets = JSON.parse(await fs.readFile(dbpath));
+    // Grab Data from a newSnippet (validate)
+    // make newSnippet a proper object
+    // generate default data (id, comments, favorites)
+    // push that object into snippet
+    snippets.push({
+      id: shortid.generate(), // ? Generate a new id per user
+      author,
+      code,
+      title,
+      description,
+      language,
+      comments: [],
+      favorites: 0,
+    });
+    // Write to the file
+    await fs.writeFile(dbpath, JSON.stringify(snippets));
+    return snippets[snippets.length - 1];
+  } catch (error) {
+    console.log(error.message);
+    throw error;
+  }
+};
+
 /* Read */
 /**
  * Selects snippets from db.
