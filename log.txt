@@ -1,0 +1,1 @@
+Method: GET, Path: /, TimeStamp: 1564074477029Method: GET, Path: /, TimeStamp: 1564074498347Method: GET, Path: /, TimeStamp: 1564074519249resource => path.join(__dirname, '..', `${resource}.txt`)txtFile => path.join(__dirname, '..', `${txtFile}.txt`)Method: GET, Path: /, TimeStamp: 1564074969513

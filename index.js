@@ -1,22 +1,19 @@
-// Get the snippet.model.js data
-const Snippet = require('./models/Snippet.model');
+// bring in the module for express
+const express = require('express');
+// create express constructor
+const app = express();
+// Bring in the routes js file
+const router = require('./middleware/routes');
+const logger = require('./middleware/logger');
+const errorHandler = require('./middleware/errorHandler');
 
-// Deal with promise from snippet.select
-async function testModels() {
-  //   const snippets = await Snippet.select();
-  //   console.log(snippets);
-  try {
-    const newSnippet = await Snippet.insert({
-      author: 'CJ',
-      code: 'code',
-      title: 'test.js',
-      description: 'this works great',
-      language: 'javascript',
-    });
-    console.log(newSnippet);
-  } catch (err) {
-    console.log(err);
-  }
-}
+// Lets you use the routes in file
+/* Middleware */
+app.use(express.json()); // parses requests with JSON payloads
+app.use(logger);
+app.use(router);
+app.use(errorHandler);
 
-testModels();
+app.listen(process.env.PORT || 5000, () => {
+  console.log('Snips Server running on port 5000');
+});
