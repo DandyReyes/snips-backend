@@ -1,6 +1,9 @@
+// formats anything that's not parameterized like the keys
+const format = require('pg-format');
 const shortid = require('shortid');
 const { readJsonFromDb, writeJsonToDb } = require('../utils/db.utils');
 const ErrorWithHttpStatus = require('../utils/ErrorWithHttpStatus');
+const db = require('../db');
 
 /**
  * @typedef {Object} Snippet
@@ -25,6 +28,12 @@ exports.insert = async ({ author, code, title, description, language }) => {
     if (!author || !code || !title || !description || !language) {
       throw new ErrorWithHttpStatus('missing properties', 400);
     }
+    return db.query(
+      `INSERT INTO snippet (code, title, description, author, language) VALUES 
+      ($1, $2, $3, $4, $5) RETURNING *`,
+      [author, code, title, description, language]
+    );
+    /*
     // Read snippets.json
     const snippets = await readJsonFromDb('snippets');
     // Grab Data from a newSnippet (validate)
@@ -44,6 +53,7 @@ exports.insert = async ({ author, code, title, description, language }) => {
     // Write to the file
     await writeJsonToDb('snippets', snippets);
     return snippets[snippets.length - 1];
+    */
   } catch (error) {
     if (error instanceof ErrorWithHttpStatus) throw error;
     else throw new ErrorWithHttpStatus('database error');
@@ -60,10 +70,23 @@ exports.insert = async ({ author, code, title, description, language }) => {
  */
 exports.select = async (query = {} /** Incase select statement is empty */) => {
   try {
+    const clauses = Object.keys(query)
+      .map((key, i) => `%I=$${i + 1}`)
+      .join(' AND ');
+    const formattedSelect = format(
+      `SELECT * FROM snippet ${clauses.length ? `WHERE  ${clauses}` : ''}`,
+      ...Object.keys(query)
+    );
+    const results = await db.query(formattedSelect, Object.values(query));
+    return results.rows;
+
+    // const result = await db.query('SELECT * FROM snippet ORDER BY id');
+    // return result.rows;
+    /*
     // 1. Read the file
     const snippets = await readJsonFromDb('snippets');
     // 2. Parse it
-    /* const parsedSnippets = JSON.parse(snippets); */
+    // const parsedSnippets = JSON.parse(snippets);
     // ? Filter snippets with query
     // ? check if every query key
     // ? snippet[key] === query[key]
@@ -73,6 +96,7 @@ exports.select = async (query = {} /** Incase select statement is empty */) => {
     );
     // 3. Return data
     return filtered;
+    */
   } catch (err) {
     throw new ErrorWithHttpStatus('database error', 500);
   }
@@ -83,7 +107,24 @@ exports.select = async (query = {} /** Incase select statement is empty */) => {
  * @param {string} id - id of the snippet to update
  * @param {Snippet} newData - subset of values to update
  */
-exports.update = async (id, newData) => {
+exports.update = async (id, { author, code, title, description, language }) =>
+  db.query(
+    `UPDATE 
+      snippet
+     SET 
+      author = COALESCE($1, author), 
+      code = COALESCE($2, code), 
+      title = COALESCE($3, title), 
+      description = COALESCE($4, description), 
+      language = COALESCE($5, language) 
+     WHERE 
+      id = $6`,
+    [author, code, title, description, language, id]
+  );
+// if (updateUserInfo.rowCount === 0)
+//   throw new ErrorWithHttpStatus(`Snippet ID ${id} not found`, 500);
+
+/*
   // TODO: error on id not found
   // 1. read file
   const snippets = await readJsonFromDb('snippets');
@@ -102,21 +143,33 @@ exports.update = async (id, newData) => {
   });
   // 4. write back to db
   return writeJsonToDb('snippets', updatedSnippets);
-};
+  */
 
 /**
  * Delete
  * @param {string} id
  */
 exports.delete = async id => {
+  try {
+    // test if this id exists
+    const result = await db.query(`SELECT id FROM snippet WHERE id = $1`, [id]);
+    if (result.rowCount === 0)
+      throw new ErrorWithHttpStatus(`Snippet ID ${id} not found`, 500);
+    return db.query(`DELETE FROM snippet WHERE id = ${id}`);
+    /*
   // 1. read the file
   const snippets = await readJsonFromDb('snippets');
   // 2. filter snippets for everything except snippet.id === id
   const newSnippet = snippets.filter(snippet => snippet.id !== id);
   // ? if you get the same length as you
-  // ? started with then you mast have not found it! DNE
+  // ? started with then you must have not found it! DNE
   if (newSnippet.length === snippets.length) return;
   // TODO: error if trying to delete a snippet DNE
   // 3. write the file
   return writeJsonToDb('snippets', newSnippet);
+  */
+  } catch (err) {
+    if (err instanceof ErrorWithHttpStatus) throw err;
+    else throw new ErrorWithHttpStatus('Database error', 500);
+  }
 };
