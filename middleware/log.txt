@@ -116,3 +116,13 @@ Method: GET, Path: /api/snippets, TimeStamp: 1567639675068
 Method: GET, Path: /api/snippets, TimeStamp: 1567720089600
 Method: GET, Path: /api/snippets, TimeStamp: 1567720142536
 Method: GET, Path: /api/snippets, TimeStamp: 1567720146183
+Method: GET, Path: /, TimeStamp: 1568053411387
+Method: GET, Path: /favicon.ico, TimeStamp: 1568053411544
+Method: GET, Path: /api/snippets, TimeStamp: 1568053418240
+Method: GET, Path: /api/snippets, TimeStamp: 1568053468548
+Method: GET, Path: /api/snippets, TimeStamp: 1568053469523
+Method: GET, Path: /api/snippets, TimeStamp: 1568053472240
+Method: GET, Path: /favicon.ico, TimeStamp: 1568053472264
+Method: GET, Path: /api/snippets, TimeStamp: 1568053501120
+Method: GET, Path: /api/snippets, TimeStamp: 1568053502034
+Method: GET, Path: /api/snippets, TimeStamp: 1568053520643
