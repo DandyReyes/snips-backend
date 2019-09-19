@@ -33,27 +33,6 @@ exports.insert = async ({ author, code, title, description, language }) => {
       ($1, $2, $3, $4, $5) RETURNING *`,
       [author, code, title, description, language]
     );
-    /*
-    // Read snippets.json
-    const snippets = await readJsonFromDb('snippets');
-    // Grab Data from a newSnippet (validate)
-    // make newSnippet a proper object
-    // generate default data (id, comments, favorites)
-    // push that object into snippet
-    snippets.push({
-      id: shortid.generate(), // ? Generate a new id per user
-      author,
-      code,
-      title,
-      description,
-      language,
-      comments: [],
-      favorites: 0,
-    });
-    // Write to the file
-    await writeJsonToDb('snippets', snippets);
-    return snippets[snippets.length - 1];
-    */
   } catch (error) {
     if (error instanceof ErrorWithHttpStatus) throw error;
     else throw new ErrorWithHttpStatus('database error');
